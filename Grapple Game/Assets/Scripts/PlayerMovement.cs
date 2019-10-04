@@ -11,6 +11,7 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.1f,0.4f)] [SerializeField] private float endMovementParam;
     [SerializeField] private float crouchSpeedModifier;
     [SerializeField] private Collider2D crouchDisableCollider;
+    [SerializeField] private Collider2D crouchTrigger;
 
     private Animator an;
     private Rigidbody2D rb;
@@ -24,15 +25,26 @@ public class PlayerMovement : MonoBehaviour
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        grounded = true;
+        if (collision.gameObject.name != "TilemapNoClip")
+        {
+            grounded = true;
+            if (GrappleController.shoot)
+            {
+                GrappleController.pull = true;
+            }
+            GrappleController.shoot = false;
+        }
     }
     private void OnCollisionStay2D(Collision2D collision)
     {
-        grounded = true;
+        if (collision.gameObject.name != "TilemapNoClip")
+        {
+            grounded = true;
+        }
     }
     private void OnCollisionExit2D(Collision2D collision)
     {
-        grounded = false;
+            grounded = false;
     }
 
     private void OnTriggerEnter2D(Collider2D other)
@@ -77,6 +89,10 @@ public class PlayerMovement : MonoBehaviour
         {
             GrappleController.shoot = true;
         }
+        if (Input.GetMouseButtonDown(1))
+        {
+            GrappleController.pull = true;
+        }
     }
 
     private void FixedUpdate()
@@ -107,7 +123,7 @@ public class PlayerMovement : MonoBehaviour
                 rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
             }
         }
-        if(direction == 0f)
+        if(direction == 0f && GrappleController.shoot != true)
         {
             if(rb.velocity.x > endMovementParam)
             {
@@ -133,12 +149,14 @@ public class PlayerMovement : MonoBehaviour
         {
             maxSpeed *= crouchSpeedModifier;
             crouchDisableCollider.enabled = false;
+            crouchTrigger.enabled = true;
             crouching = true;
         }
         if(!crouch && !mustCrouch && crouching)
         {
             maxSpeed /= crouchSpeedModifier;
             crouchDisableCollider.enabled = true;
+            crouchTrigger.enabled = false;
             crouching = false;
         }
     }

@@ -62,8 +62,10 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Assets\Scripts\GrappleCollect.cs" />
     <Compile Include="Assets\Scripts\GrappleController.cs" />
     <Compile Include="Assets\Scripts\PlayerMovement.cs" />
+    <Compile Include="Assets\Scripts\RopeController.cs" />
     <Reference Include="Unity.Timeline.Editor">
       <HintPath>C:/Users/Kai/Documents/Unity proj/Grapple-Game/Grapple Game/Library/ScriptAssemblies/Unity.Timeline.Editor.dll</HintPath>
     </Reference>
