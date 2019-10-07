@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class PlayerMovement : MonoBehaviour
 {
+    public static bool grounded;
+
     [SerializeField] private float maxSpeed;
     [SerializeField] private float acceleration;
     [SerializeField] private float deceleration;
@@ -13,6 +15,8 @@ public class PlayerMovement : MonoBehaviour
     [SerializeField] private Collider2D crouchDisableCollider;
     [SerializeField] private Collider2D crouchTrigger;
 
+    private GameObject grapple;
+    private Rigidbody2D grb;
     private Animator an;
     private Rigidbody2D rb;
     private SpriteRenderer sr;
@@ -21,10 +25,13 @@ public class PlayerMovement : MonoBehaviour
     private bool crouch;
     private bool crouching;
     private bool mustCrouch;
-    private bool grounded;
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
+        if (collision.gameObject.tag == "MoveableBlock")
+        {
+            GrappleController.blockOnPlayer = true;
+        }
         if (collision.gameObject.name != "TilemapNoClip")
         {
             grounded = true;
@@ -37,6 +44,10 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionStay2D(Collision2D collision)
     {
+        if (collision.gameObject.tag == "MoveableBlock")
+        {
+            GrappleController.blockOnPlayer = true;
+        }
         if (collision.gameObject.name != "TilemapNoClip")
         {
             grounded = true;
@@ -44,24 +55,39 @@ public class PlayerMovement : MonoBehaviour
     }
     private void OnCollisionExit2D(Collision2D collision)
     {
-            grounded = false;
+        if (collision.gameObject.tag == "MoveableBlock")
+        {
+            GrappleController.blockOnPlayer = false;
+        }
+        grounded = false;
     }
 
-    private void OnTriggerEnter2D(Collider2D other)
+    private void OnTriggerEnter2D(Collider2D collision)
     {
-        mustCrouch = true;
+        if (collision.gameObject.name != "Player")
+        {
+            mustCrouch = true;
+        }
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
-        mustCrouch = true;
+        if (collision.gameObject.name != "Player")
+        {
+            mustCrouch = true;
+        }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        mustCrouch = false;
+        if(collision.gameObject.name != "Player")
+        {
+            mustCrouch = false;
+        }
     }
 
     private void Start()
     {
+        grapple = GameObject.Find("Grapple");
+        grb = grapple.GetComponent<Rigidbody2D>();
         an = gameObject.GetComponent<Animator>();
         rb = gameObject.GetComponent<Rigidbody2D>();
         sr = gameObject.GetComponent<SpriteRenderer>();
@@ -89,7 +115,15 @@ public class PlayerMovement : MonoBehaviour
         {
             GrappleController.shoot = true;
         }
-        if (Input.GetMouseButtonDown(1))
+        if (Input.GetMouseButton(1) && !GrappleController.grappleOnBody && rb.position.y <= grb.position.y)
+        {
+            GrappleController.lockLen = true;
+        }
+        if (Input.GetMouseButtonUp(1))
+        {
+            GrappleController.lockLen = false;
+        }
+        if (Input.GetMouseButtonDown(2))
         {
             GrappleController.pull = true;
         }
@@ -97,33 +131,48 @@ public class PlayerMovement : MonoBehaviour
 
     private void FixedUpdate()
     {
-        if(direction > 0f)
+        Vector2 grappleDirection = grb.position - rb.position;
+        Vector2 prpGrappleDirection = new Vector2(grappleDirection.y, -grappleDirection.x);
+
+        if (direction > 0f)
         {
             sr.flipX = false;
-
-            if(rb.velocity.x < maxSpeed)
+            if (!GrappleController.lockLen)
             {
-                rb.velocity = new Vector2(rb.velocity.x + acceleration, rb.velocity.y);
+                if (rb.velocity.x < maxSpeed)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x + acceleration, rb.velocity.y);
+                }
+                else
+                {
+                    rb.velocity = new Vector2(maxSpeed, rb.velocity.y);
+                }
             }
             else
             {
-                rb.velocity = new Vector2(maxSpeed, rb.velocity.y);
+                rb.AddForce(prpGrappleDirection * acceleration/10f, ForceMode2D.Impulse);
             }
         }
         if (direction < 0f)
         {
             sr.flipX = true;
-
-            if (rb.velocity.x > -maxSpeed)
+            if (!GrappleController.lockLen)
             {
-                rb.velocity = new Vector2(rb.velocity.x - acceleration, rb.velocity.y);
+                if (rb.velocity.x > -maxSpeed)
+                {
+                    rb.velocity = new Vector2(rb.velocity.x - acceleration, rb.velocity.y);
+                }
+                else
+                {
+                    rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
+                }
             }
             else
             {
-                rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
+                rb.AddForce(-prpGrappleDirection * acceleration/10f, ForceMode2D.Impulse);
             }
         }
-        if(direction == 0f && GrappleController.shoot != true)
+        if(direction == 0f && !GrappleController.shoot && !GrappleController.lockLen && !GrappleController.wasLockLen)
         {
             if(rb.velocity.x > endMovementParam)
             {
@@ -145,18 +194,16 @@ public class PlayerMovement : MonoBehaviour
             jump = false;
         }
 
-        if (crouch && !crouching)
+        if (crouch && !crouching || mustCrouch && !crouching)
         {
             maxSpeed *= crouchSpeedModifier;
             crouchDisableCollider.enabled = false;
-            crouchTrigger.enabled = true;
             crouching = true;
         }
         if(!crouch && !mustCrouch && crouching)
         {
             maxSpeed /= crouchSpeedModifier;
             crouchDisableCollider.enabled = true;
-            crouchTrigger.enabled = false;
             crouching = false;
         }
     }

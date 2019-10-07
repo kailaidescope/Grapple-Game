@@ -33,7 +33,6 @@ ScriptsOnlyBuild:
     - UnityEditor.Graphs.AnimatorControllerTool
     UnityEditor.TestRunner.dll:
     - UnityEditor.TestTools.TestRunner.Api.CallbacksHolder
-    - UnityEditor.TestTools.TestRunner.TestListCacheData
   sceneClasses:
     Assets/Scenes/Scene1.unity:
     - Class: 1
@@ -63,15 +62,15 @@ ScriptsOnlyBuild:
     - Class: 114
       Script: {instanceID: 580}
     - Class: 114
-      Script: {instanceID: 10054}
+      Script: {instanceID: 9904}
     - Class: 114
-      Script: {instanceID: 10522}
+      Script: {instanceID: 10056}
     - Class: 114
-      Script: {instanceID: 11450}
+      Script: {instanceID: 10524}
     - Class: 114
-      Script: {instanceID: 23270}
+      Script: {instanceID: 10610}
     - Class: 114
-      Script: {instanceID: 24452}
+      Script: {instanceID: 11454}
     - Class: 115
       Script: {instanceID: 0}
     - Class: 120
@@ -81,6 +80,8 @@ ScriptsOnlyBuild:
     - Class: 212
       Script: {instanceID: 0}
     - Class: 213
+      Script: {instanceID: 0}
+    - Class: 232
       Script: {instanceID: 0}
     - Class: 19719996
       Script: {instanceID: 0}
@@ -169,6 +170,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestTools.TestRunner.Callbacks
     className: TestResultRendererCallback
+  - hash:
+      serializedVersion: 2
+      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: GrappleCollect
   - hash:
       serializedVersion: 2
       Hash: 234235b9fb07320d11497e08a726cc56
@@ -315,7 +322,7 @@ ScriptsOnlyBuild:
     className: SignalTrack
   - hash:
       serializedVersion: 2
-      Hash: 8e73648f1c86fc380d5a6bf904a8ce54
+      Hash: f543b4ba759350c07afc52a80d311bb3
     assemblyName: Assembly-CSharp.dll
     namespaceName: 
     className: GrappleController
@@ -331,6 +338,12 @@ ScriptsOnlyBuild:
     assemblyName: UnityEngine.TestRunner.dll
     namespaceName: UnityEngine.TestTools.TestRunner.Callbacks
     className: RemoteTestResultSender
+  - hash:
+      serializedVersion: 2
+      Hash: ea17b8ddd9e92ee9747c03fe3c16ed2b
+    assemblyName: Assembly-CSharp.dll
+    namespaceName: 
+    className: RopeController
   - hash:
       serializedVersion: 2
       Hash: 7ba35897a6eb27627ed456c682c34253
@@ -583,20 +596,8 @@ ScriptsOnlyBuild:
     assemblyName: Unity.Timeline.dll
     namespaceName: UnityEngine.Timeline
     className: PlayableTrack
-  - hash:
-      serializedVersion: 2
-      Hash: 71bb6a6b6c8f052f948db64c7dd3ca4f
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: GrappleCollect
-  - hash:
-      serializedVersion: 2
-      Hash: ea17b8ddd9e92ee9747c03fe3c16ed2b
-    assemblyName: Assembly-CSharp.dll
-    namespaceName: 
-    className: RopeController
   platform: 5
   scenePathNames:
   - Assets/Scenes/Scene1.unity
-  playerPath: C:/Users/Kai/Documents/Unity proj/Grapple-Game/Grapple Game/Builds/Grapple
+  playerPath: C:/Users/Kai/Documents/Unity proj/Grapple-Game/Grapple Game/Builds/Build2/Grapple
     Game.exe

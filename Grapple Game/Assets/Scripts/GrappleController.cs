@@ -5,30 +5,43 @@ using UnityEngine;
 public class GrappleController : MonoBehaviour
 {
     public static bool shoot;
+    public static bool lockLen;
+    public static bool wasLockLen;
     public static bool pull;
     public static bool inPlayer;
+    public static bool blockOnPlayer;
+    public static bool grappleOnBody;
+    public static bool inWall;
 
     [SerializeField] private float offset;
     [SerializeField] private float grappleSpeed;
     [SerializeField] private float grapplePullMod;
     [SerializeField] private float playerPullMod;
+    [SerializeField] private float blockPullMod;
     [SerializeField] private float maxTimeOut;
 
     private GameObject player;
     private GameObject collectTrigger;
+    private GameObject moveableBlock;
+    private GameObject rope;
     private Collider2D headCollider;
     private Rigidbody2D rb;
     private Rigidbody2D prb;
+    private DistanceJoint2D grappleJoint;
     private Vector2 mousePos;
     private Vector2 mouseDirection;
     private Vector2 playerDirection;
     private float time;
-    private bool grappleOnBody;
-    private bool inWall;
-    private bool wasInWall;
+    private bool inMoveableWall;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (collision.tag == "MoveableBlock" && !pull)
+        {
+            inMoveableWall = true;
+            moveableBlock = collision.gameObject;
+            collectTrigger.SetActive(true);
+        }
         if(collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip")
         {
             inWall = true;
@@ -37,6 +50,10 @@ public class GrappleController : MonoBehaviour
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
+        if(collision.tag == "MoveableBlock")
+        {
+            inMoveableWall = false;
+        }
         if (collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip")
         {
             inWall = false;
@@ -46,32 +63,41 @@ public class GrappleController : MonoBehaviour
     void Start()
     {
         player = GameObject.Find("Player");
+
         collectTrigger = GameObject.Find("GrappleCollectTrigger");
         collectTrigger.SetActive(false);
+
+        moveableBlock = null;
+
+        rope = GameObject.Find("Rope");
+
         headCollider = gameObject.GetComponent<Collider2D>();
         rb = gameObject.GetComponent<Rigidbody2D>();
         prb = player.GetComponent<Rigidbody2D>();
+        grappleJoint = gameObject.GetComponent<DistanceJoint2D>();
+
         GetDirections();
+
         grappleOnBody = true;
         shoot = false;
+        lockLen = false;
+        wasLockLen = false;
         pull = false;
+        blockOnPlayer = false;
         inWall = false;
-        wasInWall = false;
+        inMoveableWall = false;
+
         time = 0f;
     }
 
     void FixedUpdate()
     {
         GetDirections();
+        LockLength();
         ShootGrapple();
         PullGrapple();
-        PullToGrapple();
         PointToCursor();
-        if (inPlayer)
-        {
-            ReturnGrappleToBody();
-        }
-        if (inWall && !pull)
+        if (inWall && !pull && !grappleOnBody)
         {
             rb.velocity = Vector2.zero;
         }
@@ -103,11 +129,7 @@ public class GrappleController : MonoBehaviour
         {
             time = 0f;
         }
-
-        if(time > maxTimeOut)
-        {
-            ReturnGrappleToBody();
-        }
+        ReturnGrappleToBody();
     }
 
     void GetDirections()
@@ -127,10 +149,23 @@ public class GrappleController : MonoBehaviour
             rb.velocity = new Vector2(mouseDirection.x * grappleSpeed + rb.velocity.x, mouseDirection.y * grappleSpeed + rb.velocity.y);
             shoot = false;
         }
+        else if (shoot && !grappleOnBody && inWall)
+        {
+            prb.velocity = new Vector2(-playerDirection.x * grappleSpeed / playerPullMod + prb.velocity.x, -playerDirection.y * grappleSpeed / playerPullMod + prb.velocity.y);
+        }
+        else
+        {
+            shoot = false;
+        }
     }
     void PullGrapple()
     {
-        if (pull && !grappleOnBody)
+        if (pull && !grappleOnBody && inMoveableWall)
+        {
+            rb.velocity = new Vector2(playerDirection.x * grappleSpeed / blockPullMod + rb.velocity.x, playerDirection.y * grappleSpeed / blockPullMod + rb.velocity.y);
+            moveableBlock.GetComponent<Rigidbody2D>().velocity = new Vector2(playerDirection.x * grappleSpeed / blockPullMod + rb.velocity.x, playerDirection.y * grappleSpeed / blockPullMod + rb.velocity.y);
+        }
+        else if (pull && !grappleOnBody)
         {
             rb.velocity = new Vector2(playerDirection.x * grappleSpeed/grapplePullMod + rb.velocity.x, playerDirection.y * grappleSpeed/grapplePullMod + rb.velocity.y);
         }
@@ -139,19 +174,31 @@ public class GrappleController : MonoBehaviour
             pull = false;
         }
     }
-    void PullToGrapple()
+    void LockLength()
     {
-        if (shoot && !grappleOnBody && (inWall || wasInWall))
+        if (lockLen)
         {
-            prb.velocity = new Vector2(-playerDirection.x * grappleSpeed/playerPullMod + prb.velocity.x, -playerDirection.y * grappleSpeed/playerPullMod + prb.velocity.y);
-            wasInWall = true;
+            if (!wasLockLen)
+            {
+                wasLockLen = true;
+                grappleJoint.enabled = true;
+                grappleJoint.distance = Vector2.Distance(rb.position, prb.position);
+            }
+            pull = false;
+            shoot = false;
+        }
+        else if (!PlayerMovement.grounded && wasLockLen)
+        {
+            grappleJoint.enabled = false;
+            pull = true;
         }
         else
         {
-            shoot = false;
-            wasInWall = false;
+            grappleJoint.enabled = false;
+            wasLockLen = false;
         }
     }
+    
 
     void PointToCursor()
     {
@@ -165,11 +212,18 @@ public class GrappleController : MonoBehaviour
 
     void ReturnGrappleToBody()
     {
-        grappleOnBody = true;
-        rb.velocity = Vector2.zero;
-        transform.parent = player.transform;
-        transform.localPosition = new Vector2(0.02f, -0.13f);
-        collectTrigger.SetActive(false);
-        inPlayer = false;
+        if ((time > maxTimeOut) || inPlayer || (blockOnPlayer && pull))
+        {
+            grappleOnBody = true;
+            rb.velocity = Vector2.zero;
+            if (moveableBlock != null)
+            {
+                moveableBlock.GetComponent<Rigidbody2D>().velocity = Vector2.zero;
+            }
+            transform.parent = player.transform;
+            transform.localPosition = new Vector2(0.02f, -0.13f);
+            collectTrigger.SetActive(false);
+            inPlayer = false;
+        }
     }
 }
