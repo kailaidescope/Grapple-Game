@@ -42,7 +42,7 @@ public class GrappleController : MonoBehaviour
             moveableBlock = collision.gameObject;
             collectTrigger.SetActive(true);
         }
-        if(collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip")
+        if(collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera")
         {
             inWall = true;
             collectTrigger.SetActive(true);
@@ -54,7 +54,7 @@ public class GrappleController : MonoBehaviour
         {
             inMoveableWall = false;
         }
-        if (collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip")
+        if (collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera")
         {
             inWall = false;
         }
@@ -105,6 +105,8 @@ public class GrappleController : MonoBehaviour
         if (grappleOnBody)
         {
             transform.parent = player.transform;
+            inWall = false;
+            inMoveableWall = false;
             headCollider.enabled = false;
             if (shoot)
             {
@@ -176,7 +178,11 @@ public class GrappleController : MonoBehaviour
     }
     void LockLength()
     {
-        if (lockLen)
+        if (lockLen && !(prb.position.y <= rb.position.y + 2f) && !wasLockLen)
+        {
+            pull = true;
+        }
+        else if (lockLen && !pull && inWall)
         {
             if (!wasLockLen)
             {
@@ -191,6 +197,12 @@ public class GrappleController : MonoBehaviour
         {
             grappleJoint.enabled = false;
             pull = true;
+        }
+        else if(PlayerMovement.grounded && wasLockLen)
+        {
+            grappleJoint.enabled = false;
+            pull = true;
+            wasLockLen = false;
         }
         else
         {
