@@ -10,7 +10,7 @@ public class LeftWallCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = true;
         }
-        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.onLeftWall = true;
         }
@@ -21,7 +21,7 @@ public class LeftWallCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = true;
         }
-        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.onLeftWall = true;
         }
@@ -32,7 +32,7 @@ public class LeftWallCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = false;
         }
-        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        else if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.onLeftWall = false;
         }

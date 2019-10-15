@@ -10,7 +10,7 @@ public class GroundedCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = true;
         }
-        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.grounded = true;
         }
@@ -21,7 +21,7 @@ public class GroundedCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = true;
         }
-        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.grounded = true;
         }
@@ -32,7 +32,7 @@ public class GroundedCheck : MonoBehaviour
         {
             GrappleController.blockOnPlayer = false;
         }
-        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player" && collision.gameObject.name != "Grapple")
+        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player" && collision.gameObject.name != "Grapple")
         {
             PlayerMovement.grounded = false;
         }

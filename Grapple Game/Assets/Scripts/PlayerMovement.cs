@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     [Range(0.1f,0.4f)] [SerializeField] private float endMovementParam;
     [SerializeField] private float crouchSpeedModifier;
     [SerializeField] private Collider2D crouchDisableCollider;
+    [SerializeField] private float stopMovementTimeMax;
 
     private GameObject grapple;
     private Rigidbody2D grb;
@@ -23,20 +24,21 @@ public class PlayerMovement : MonoBehaviour
     private Rigidbody2D rb;
     private SpriteRenderer sr;
     private float direction;
+    private float stopMovementTime;
     private string wallJumped;
     private bool jump;
     private bool crouch;
     private bool crouching;
-    private bool dontStopMovement;
+    private bool stopMovement;
     private bool climbing;
 
     private void OnCollisionEnter2D(Collision2D collision)
     {
-        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.name != "Player")
+        if (collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Player")
         {
             if (GrappleController.shoot)
             {
-                GrappleController.pull = true;
+                GrappleController.returnToBody = true; ;
             }
             GrappleController.shoot = false;
         }
@@ -49,6 +51,8 @@ public class PlayerMovement : MonoBehaviour
         an = gameObject.GetComponent<Animator>();
         rb = gameObject.GetComponent<Rigidbody2D>();
         sr = gameObject.GetComponent<SpriteRenderer>();
+
+        stopMovementTime = 0f;
     }
 
     void Update()
@@ -88,9 +92,29 @@ public class PlayerMovement : MonoBehaviour
         Vector2 grappleDirection = grb.position - rb.position;
         Vector2 prpGrappleDirection = new Vector2(grappleDirection.y, -grappleDirection.x);
 
-        if (grounded || onRightWall || onLeftWall)
+        if (!stopMovement)
         {
-            dontStopMovement = false;
+            stopMovementTime++;
+            if (grounded)
+            {
+                stopMovement = true;
+            }
+            else if (((direction > 0 && rb.velocity.x <= 0) || (direction < 0 && rb.velocity.x >= 0)) && wallJumped != null)
+            {
+                stopMovement = true;
+            }
+            else if(direction != 0 && wallJumped == null)
+            {
+                stopMovement = true;
+            }
+            else if(stopMovementTime >= stopMovementTimeMax)
+            {
+                stopMovement = true;
+            }
+        }
+        else
+        {
+            stopMovementTime = 0f;
         }
         if (grounded)
         {
@@ -114,13 +138,20 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (!GrappleController.wasLockLen/* && !onRightWall*/)
                 {
-                    if (rb.velocity.x < maxSpeed)
+                    if (rb.velocity.x > 0f)
                     {
-                        rb.velocity = new Vector2(rb.velocity.x + acceleration, rb.velocity.y);
+                        if (rb.velocity.x < maxSpeed)
+                        {
+                            rb.velocity = new Vector2(rb.velocity.x + acceleration, rb.velocity.y);
+                        }
+                        else
+                        {
+                            rb.velocity = new Vector2(maxSpeed, rb.velocity.y);
+                        }
                     }
                     else
                     {
-                        rb.velocity = new Vector2(maxSpeed, rb.velocity.y);
+                        rb.velocity = new Vector2(rb.velocity.x + deceleration, rb.velocity.y);
                     }
                 }
                 else if (rb.position.y <= grb.position.y)
@@ -140,13 +171,20 @@ public class PlayerMovement : MonoBehaviour
             {
                 if (!GrappleController.wasLockLen/* && !onLeftWall*/)
                 {
-                    if (rb.velocity.x > -maxSpeed)
+                    if (rb.velocity.x < 0f)
                     {
-                        rb.velocity = new Vector2(rb.velocity.x - acceleration, rb.velocity.y);
+                        if (rb.velocity.x > -maxSpeed)
+                        {
+                            rb.velocity = new Vector2(rb.velocity.x - acceleration, rb.velocity.y);
+                        }
+                        else
+                        {
+                            rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
+                        }
                     }
                     else
                     {
-                        rb.velocity = new Vector2(-maxSpeed, rb.velocity.y);
+                        rb.velocity = rb.velocity = new Vector2(rb.velocity.x - deceleration, rb.velocity.y);
                     }
                 }
                 else if (rb.position.y <= grb.position.y)
@@ -159,7 +197,7 @@ public class PlayerMovement : MonoBehaviour
                 }*/
             }
         }
-        if(direction == 0f && !GrappleController.shoot && !GrappleController.wasLockLen && !dontStopMovement)
+        if(direction == 0f && !GrappleController.shoot && !GrappleController.wasLockLen && stopMovement)
         {
             if(rb.velocity.x > endMovementParam)
             {
@@ -187,7 +225,7 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(new Vector2(0.6f, 0.8f) * jumpForce, ForceMode2D.Impulse);
             jump = false;
             wallJumped = "left";
-            dontStopMovement = true;
+            stopMovement = false;
         }
         else if (jump && onRightWall && wallJumped != "right")
         {
@@ -196,7 +234,7 @@ public class PlayerMovement : MonoBehaviour
             rb.AddForce(new Vector2(-0.6f, 0.8f) * jumpForce, ForceMode2D.Impulse);
             jump = false;
             wallJumped = "right";
-            dontStopMovement = true;
+            stopMovement = false;
         }
         else
         {

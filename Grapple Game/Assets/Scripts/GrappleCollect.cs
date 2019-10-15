@@ -4,12 +4,11 @@ using UnityEngine;
 
 public class GrappleCollect : MonoBehaviour
 {
-    private GameObject player;
     private bool inPlayer;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name == player.name)
+        if (collision.gameObject.tag == "Player")
         {
             inPlayer = true;
         }
@@ -18,7 +17,6 @@ public class GrappleCollect : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        player = GameObject.Find("Player");
         inPlayer = false;
     }
 

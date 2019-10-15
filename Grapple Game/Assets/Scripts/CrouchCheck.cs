@@ -7,21 +7,21 @@ public class CrouchCheck : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
-        if (collision.gameObject.name != "Player" && collision.gameObject.tag != "MainCamera")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.tag != "MainCamera")
         {
             PlayerMovement.mustCrouch = true;
         }
     }
     private void OnTriggerStay2D(Collider2D collision)
     {
-        if (collision.gameObject.name != "Player" && collision.gameObject.tag != "MainCamera")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.tag != "MainCamera")
         {
             PlayerMovement.mustCrouch = true;
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
     {
-        if (collision.gameObject.name != "Player" && collision.gameObject.tag != "MainCamera")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.tag != "MainCamera")
         {
             PlayerMovement.mustCrouch = false;
         }

@@ -11,6 +11,7 @@ public class GrappleController : MonoBehaviour
     public static bool inPlayer;
     public static bool blockOnPlayer;
     public static bool grappleOnBody;
+    public static bool returnToBody;
     public static bool inWall;
 
     [SerializeField] private float offset;
@@ -40,12 +41,26 @@ public class GrappleController : MonoBehaviour
         {
             inMoveableWall = true;
             moveableBlock = collision.gameObject;
+            transform.parent = moveableBlock.transform;
             collectTrigger.SetActive(true);
         }
-        if(collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Grapple")
         {
             inWall = true;
             collectTrigger.SetActive(true);
+            rb.velocity = Vector2.zero;
+        }
+    }
+    private void OnTriggerStay2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag != "Player" && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Grapple")
+        {
+            inWall = true;
+            collectTrigger.SetActive(true);
+            if (!pull)
+            {
+                rb.velocity = Vector2.zero;
+            }
         }
     }
     private void OnTriggerExit2D(Collider2D collision)
@@ -54,7 +69,7 @@ public class GrappleController : MonoBehaviour
         {
             inMoveableWall = false;
         }
-        if (collision.gameObject.name != player.name && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera" && collision.gameObject.tag != "Grapple")
         {
             inWall = false;
         }
@@ -97,10 +112,6 @@ public class GrappleController : MonoBehaviour
         ShootGrapple();
         PullGrapple();
         PointToCursor();
-        if (inWall && !pull && !grappleOnBody)
-        {
-            rb.velocity = Vector2.zero;
-        }
 
         if (grappleOnBody)
         {
@@ -113,13 +124,8 @@ public class GrappleController : MonoBehaviour
                 shoot = false;
             }
         }
-        else if (!grappleOnBody && pull)
-        {
-            headCollider.enabled = true;
-        }
         else
         {
-            transform.parent = null;
             headCollider.enabled = true;
         }
 
@@ -150,6 +156,7 @@ public class GrappleController : MonoBehaviour
             grappleOnBody = false;
             rb.velocity = new Vector2(mouseDirection.x * grappleSpeed + rb.velocity.x, mouseDirection.y * grappleSpeed + rb.velocity.y);
             shoot = false;
+            transform.parent = null;
         }
         else if (shoot && !grappleOnBody && inWall)
         {
@@ -224,7 +231,7 @@ public class GrappleController : MonoBehaviour
 
     void ReturnGrappleToBody()
     {
-        if ((time > maxTimeOut) || inPlayer || (blockOnPlayer && pull))
+        if ((time > maxTimeOut) || inPlayer || (blockOnPlayer && pull) || returnToBody)
         {
             grappleOnBody = true;
             rb.velocity = Vector2.zero;
@@ -236,6 +243,7 @@ public class GrappleController : MonoBehaviour
             transform.localPosition = new Vector2(0.02f, -0.13f);
             collectTrigger.SetActive(false);
             inPlayer = false;
+            returnToBody = false;
         }
     }
 }
