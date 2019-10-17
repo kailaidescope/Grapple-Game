@@ -69,7 +69,7 @@ public class GrappleController : MonoBehaviour
         {
             inMoveableWall = false;
         }
-        if (collision.gameObject.tag != "Player" && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "MainCamera" && collision.gameObject.tag != "Grapple")
+        if (collision.gameObject.tag != "Player" && collision.gameObject.name != "TilemapNoClip" && collision.gameObject.tag != "Grapple")
         {
             inWall = false;
         }
@@ -129,7 +129,7 @@ public class GrappleController : MonoBehaviour
             headCollider.enabled = true;
         }
 
-        if(!grappleOnBody && !inWall || pull)
+        if(!grappleOnBody && (!inWall || pull))
         {
             time += Time.fixedDeltaTime;
         }
@@ -155,8 +155,8 @@ public class GrappleController : MonoBehaviour
         {
             grappleOnBody = false;
             rb.velocity = new Vector2(mouseDirection.x * grappleSpeed + rb.velocity.x, mouseDirection.y * grappleSpeed + rb.velocity.y);
-            shoot = false;
             transform.parent = null;
+            shoot = false;
         }
         else if (shoot && !grappleOnBody && inWall)
         {
@@ -185,9 +185,9 @@ public class GrappleController : MonoBehaviour
     }
     void LockLength()
     {
-        if (lockLen && !(prb.position.y <= rb.position.y + 2f) && !wasLockLen)
+        if (lockLen && !(prb.position.y <= rb.position.y + 2f) && !wasLockLen && inWall)
         {
-            pull = true;
+            returnToBody = true;
         }
         else if (lockLen && !pull && inWall)
         {
@@ -200,15 +200,15 @@ public class GrappleController : MonoBehaviour
             pull = false;
             shoot = false;
         }
-        else if (!PlayerMovement.grounded && wasLockLen)
+        else if (!PlayerMovement.grounded && wasLockLen && !shoot)
         {
             grappleJoint.enabled = false;
-            pull = true;
+            returnToBody = true;
         }
         else if(PlayerMovement.grounded && wasLockLen)
         {
             grappleJoint.enabled = false;
-            pull = true;
+            returnToBody = true;
             wasLockLen = false;
         }
         else
@@ -234,6 +234,7 @@ public class GrappleController : MonoBehaviour
         if ((time > maxTimeOut) || inPlayer || (blockOnPlayer && pull) || returnToBody)
         {
             grappleOnBody = true;
+            shoot = false;
             rb.velocity = Vector2.zero;
             if (moveableBlock != null)
             {

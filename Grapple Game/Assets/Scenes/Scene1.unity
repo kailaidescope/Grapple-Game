@@ -1356,7 +1356,7 @@ MonoBehaviour:
   offset: -45
   grappleSpeed: 70
   grapplePullMod: 8
-  playerPullMod: 24
+  playerPullMod: 40
   blockPullMod: 35
   maxTimeOut: 0.5
 --- !u!50 &1115785954
